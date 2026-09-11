@@ -819,13 +819,30 @@
     ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
   }
 
-  function drawCloud(x,y){
+  var CANDY_COLORS = ['#ff8ac6','#8ecbff','#c9a2ff','#ffe066','#7be8c0','#ff9e6d'];
+
+  function drawCloud(x,y,color){
+    ctx.fillStyle = color;
+    ctx.strokeStyle = 'rgba(255,255,255,.6)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(x,y,15,0,Math.PI*2);
     ctx.arc(x+17,y+3,19,0,Math.PI*2);
     ctx.arc(x+35,y,13,0,Math.PI*2);
     ctx.fill();
     ctx.stroke();
+
+    // wrapper twists, so the puff reads as a wrapped candy
+    ctx.beginPath();
+    ctx.moveTo(x-15,y-7); ctx.lineTo(x-27,y-13); ctx.lineTo(x-27,y+1); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x+48,y-7); ctx.lineTo(x+60,y-13); ctx.lineTo(x+60,y+1); ctx.closePath(); ctx.fill();
+
+    // glossy shine highlight
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.beginPath();
+    ctx.ellipse(x+13,y-7,8,3.5,-0.4,0,Math.PI*2);
+    ctx.fill();
   }
 
   function drawHill(x,baseY,w,h,swirl){
@@ -849,12 +866,10 @@
 
   function drawParallax(){
     var camFar = cameraX*0.2;
-    ctx.fillStyle = 'rgba(255,255,255,.92)';
-    ctx.strokeStyle = 'rgba(255,111,194,.5)';
-    ctx.lineWidth = 2;
     for(var i=-1;i<6;i++){
       var bx = (i*260) - (camFar%260);
-      drawCloud(bx+40, 60+((i%2)*22));
+      var color = CANDY_COLORS[((i%CANDY_COLORS.length)+CANDY_COLORS.length)%CANDY_COLORS.length];
+      drawCloud(bx+40, 60+((i%2)*22), color);
     }
     var camMid = cameraX*0.45;
     ctx.fillStyle = '#b98cff';
