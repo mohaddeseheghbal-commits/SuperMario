@@ -26,7 +26,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
-          source: "index.html,assets/*"
+          source: "index.html,assets/**/*"
           target: "${{ secrets.DEPLOY_PATH }}"
           strip_components: 0
 
