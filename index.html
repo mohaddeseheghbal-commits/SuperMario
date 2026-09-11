@@ -86,16 +86,24 @@
   }
 
   .life-dot{
-    width:14px;
-    height:14px;
-    border-radius:50%;
-    background:var(--danger);
-    box-shadow:inset 0 -2px 0 rgba(0,0,0,.25);
+    width:16px;
+    height:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    line-height:1;
+    color:var(--danger);
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.25));
+  }
+
+  .life-dot::before{
+    content:'\2764';
   }
 
   .life-dot.lost{
-    background:transparent;
-    border:2px solid var(--panel-2);
+    color:var(--panel-2);
+    filter:none;
   }
 
   .game-frame{
