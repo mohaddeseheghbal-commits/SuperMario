@@ -8,7 +8,7 @@
   {
     "id": "coin",
     "file": "coin.mp3",
-    "prompt": "A cheerful, short 8-bit video game coin-collect chime, two quick bright ascending notes",
+    "prompt": "A cute, sparkly candy pickup sound effect: a sweet crinkly wrapper crunch topped with a bubbly, bright chime, playful and sugary",
     "duration": 0.5
   },
   {
@@ -20,8 +20,8 @@
   {
     "id": "hit",
     "file": "hit.mp3",
-    "prompt": "A short retro video game damage/hit sound effect, a harsh low buzz",
-    "duration": 0.5
+    "prompt": "A short cartoonish 'ouch' sound effect for a character bumping into an enemy: a surprised yelp with a quick descending boing, playful but startled",
+    "duration": 0.6
   },
   {
     "id": "win",
