@@ -41,32 +41,6 @@
     gap:14px;
   }
 
-  header{
-    text-align:center;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-
-  h1{
-    font-family:'Press Start 2P',monospace;
-    font-size:clamp(14px,3.4vw,22px);
-    line-height:1.6;
-    letter-spacing:1px;
-    margin:0;
-    color:var(--accent);
-    text-shadow:3px 3px 0 var(--panel-2);
-    text-wrap:balance;
-  }
-
-  .tagline{
-    margin:0;
-    color:var(--text-dim);
-    font-weight:700;
-    font-size:14px;
-    letter-spacing:.3px;
-  }
-
   .hud{
     display:flex;
     flex-wrap:wrap;
@@ -76,6 +50,8 @@
     border-radius:12px;
     padding:10px 14px;
   }
+
+  .hud[hidden], .legend[hidden]{display:none!important;}
 
   .stat{
     flex:1 1 auto;
@@ -150,6 +126,8 @@
     gap:14px;
     padding:20px;
     text-align:center;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
 
   .overlay[hidden]{display:none!important;}
@@ -158,10 +136,70 @@
     background:
       linear-gradient(180deg,rgba(11,15,31,.35) 0%,rgba(11,15,31,.55) 55%,rgba(11,15,31,.92) 100%),
       url('assets/start-bg.jpg') center center/cover no-repeat;
+    align-items:flex-start;
+    justify-content:center;
+    text-align:left;
+    padding:26px 20px 26px 30px;
   }
 
   #overlayStart h2, #overlayStart p{
     text-shadow:0 2px 6px rgba(0,0,0,.6);
+  }
+
+  #overlayStart h2{
+    font-size:clamp(16px,4.6vw,26px);
+  }
+
+  .start-content{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+    max-width:min(400px,64%);
+  }
+
+  .start-content .legend{
+    justify-content:flex-start;
+  }
+
+  .best-badge{
+    position:absolute;
+    top:14px;
+    right:14px;
+    background:rgba(11,15,31,.6);
+    border:2px solid var(--bezel);
+    border-radius:20px;
+    padding:6px 12px;
+    font-size:11px;
+    font-weight:800;
+    color:var(--accent-2);
+    letter-spacing:.5px;
+    text-shadow:0 2px 4px rgba(0,0,0,.6);
+  }
+
+  .best-badge[hidden]{display:none!important;}
+
+  @keyframes ctaPulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.045); }
+  }
+
+  #overlayStart .btn{
+    animation:ctaPulse 2.2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #overlayStart .btn{ animation:none; }
+  }
+
+  @media (max-width:560px){
+    #overlayStart{padding:12px 14px 12px 18px;}
+    .start-content{gap:6px; max-width:72%;}
+    #overlayStart h2{font-size:clamp(13px,4.4vw,18px);}
+    #overlayStart p{font-size:11.5px;}
+    .start-content .chip{padding:4px 8px;font-size:10px;}
+    .start-content .sub{display:none;}
+    #overlayStart .btn{padding:9px 16px;font-size:10px;}
   }
 
   .overlay h2{
@@ -272,12 +310,7 @@
 <body>
 
 <div class="stage">
-  <header>
-    <h1>Pip's Platform Quest</h1>
-    <p class="tagline">A pocket-sized platformer &mdash; run, jump, grab gems, reach the flag.</p>
-  </header>
-
-  <div class="hud">
+  <div class="hud" id="hud" hidden>
     <div class="stat">
       <span class="stat-label">Score</span>
       <span class="stat-value" id="scoreVal">0</span>
@@ -312,10 +345,19 @@
     </div>
 
     <div class="overlay" id="overlayStart">
-      <h2>Pip's Platform Quest</h2>
-      <p>Rescue the meadow &mdash; collect gems, stomp Grumbles, reach the flag.</p>
-      <p class="sub">3 lives. Falling in a pit costs one. Touch a Grumble from the side and it costs one too &mdash; land on its head instead.</p>
-      <button class="btn" id="playBtn">PLAY</button>
+      <div class="start-content">
+        <h2>Pip's Platform Quest</h2>
+        <p>Run, jump, and grab gems to reach the flag.</p>
+        <div class="legend">
+          <span class="chip"><kbd>&larr;</kbd><kbd>&rarr;</kbd> Move</span>
+          <span class="chip"><kbd>SPACE</kbd> Jump</span>
+          <span class="chip">Stomp Grumbles</span>
+          <span class="chip">3 Lives</span>
+        </div>
+        <button class="btn" id="playBtn">PLAY</button>
+        <p class="sub">Falling in a pit or touching a Grumble from the side costs a life &mdash; land on its head instead.</p>
+      </div>
+      <span class="best-badge" id="overlayBest" hidden></span>
     </div>
 
     <div class="overlay" id="overlayGameOver" hidden>
@@ -332,7 +374,7 @@
     </div>
   </div>
 
-  <div class="legend">
+  <div class="legend" id="legend" hidden>
     <span class="chip"><kbd>&larr;</kbd><kbd>&rarr;</kbd> move</span>
     <span class="chip"><kbd>SPACE</kbd> / <kbd>&uarr;</kbd> jump</span>
     <span class="chip">Land on a Grumble to defeat it</span>
@@ -703,6 +745,8 @@
     ensureAudio();
     resetLevel();
     hideOverlays();
+    document.getElementById('hud').hidden = false;
+    document.getElementById('legend').hidden = false;
     state = 'playing';
   }
 
@@ -1003,6 +1047,11 @@
   resetLevel();
   updateHud();
   document.getElementById('bestVal').textContent = bestScore;
+  if(bestScore > 0){
+    var overlayBest = document.getElementById('overlayBest');
+    overlayBest.textContent = 'Best: '+bestScore;
+    overlayBest.hidden = false;
+  }
   requestAnimationFrame(loop);
 })();
 </script>
