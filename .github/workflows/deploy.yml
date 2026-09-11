@@ -2,7 +2,7 @@ name: Deploy Game to Server
 
 on:
   push:
-    branches: [ claude/magical-gauss-mvpfxb ]
+    branches: [ claude/magical-gauss-mvpfxb, main ]
   workflow_dispatch: {}
 
 jobs:
