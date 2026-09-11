@@ -1,0 +1,39 @@
+name: Deploy Game to Server
+
+on:
+  push:
+    branches: [ claude/magical-gauss-mvpfxb ]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy game file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "index.html"
+          target: "~/supermario-game"
+
+      - name: Start game server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            cd ~/supermario-game
+            if [ -f server.pid ] && kill -0 "$(cat server.pid)" 2>/dev/null; then
+              kill "$(cat server.pid)"
+            fi
+            sudo -n ufw allow 8090/tcp 2>/dev/null || true
+            nohup python3 -m http.server 8090 > server.log 2>&1 &
+            echo $! > server.pid
+            sleep 1
+            echo "Game server running with PID $(cat server.pid) on port 8090"
