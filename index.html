@@ -826,19 +826,24 @@
   function drawCoins(){
     coins.forEach(function(c,i){
       var wob = Math.abs(Math.cos(timeNow*0.004 + i));
-      var s = 9;
+      var r = 9;
       ctx.save();
       ctx.translate(c.x, c.y + Math.sin(timeNow*0.003+i)*3);
       ctx.scale(Math.max(0.25,wob), 1);
-      var g = ctx.createLinearGradient(-s,-s,s,s);
+      var g = ctx.createRadialGradient(-3,-3,1,0,0,r);
       g.addColorStop(0,'#fff3b0');
       g.addColorStop(1,'#ffb400');
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.moveTo(0,-s); ctx.lineTo(s,0); ctx.lineTo(0,s); ctx.lineTo(-s,0); ctx.closePath();
+      ctx.arc(0,0,r,0,Math.PI*2);
       ctx.fill();
       ctx.strokeStyle = '#a5680a';
       ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0,0,r-3,0,Math.PI*2);
+      ctx.strokeStyle = 'rgba(165,104,10,0.6)';
+      ctx.lineWidth = 1;
       ctx.stroke();
       ctx.restore();
     });
