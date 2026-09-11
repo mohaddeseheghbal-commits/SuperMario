@@ -1,0 +1,38 @@
+[
+  {
+    "id": "jump",
+    "file": "jump.mp3",
+    "prompt": "A short, bright 8-bit style video game jump sound effect, a quick upward-pitched blip",
+    "duration": 0.5
+  },
+  {
+    "id": "coin",
+    "file": "coin.mp3",
+    "prompt": "A cheerful, short 8-bit video game coin-collect chime, two quick bright ascending notes",
+    "duration": 0.5
+  },
+  {
+    "id": "stomp",
+    "file": "stomp.mp3",
+    "prompt": "A short retro video game stomp sound effect, a low squashy thud",
+    "duration": 0.5
+  },
+  {
+    "id": "hit",
+    "file": "hit.mp3",
+    "prompt": "A short retro video game damage/hit sound effect, a harsh low buzz",
+    "duration": 0.5
+  },
+  {
+    "id": "win",
+    "file": "win.mp3",
+    "prompt": "A short upbeat 8-bit victory fanfare, four bright ascending notes",
+    "duration": 1.5
+  },
+  {
+    "id": "gameover",
+    "file": "gameover.mp3",
+    "prompt": "A short somber 8-bit game-over jingle, three descending low notes",
+    "duration": 1.5
+  }
+]

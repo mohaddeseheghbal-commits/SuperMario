@@ -568,12 +568,42 @@
       o.start(t); o.stop(t + (dur||0.1) + 0.02);
     }catch(e){}
   }
-  function sfxJump(){ beep(600,0.08,'square',0.045); }
-  function sfxCoin(){ beep(1100,0.05,'sine',0.05); setTimeout(function(){beep(1500,0.06,'sine',0.04);},40); }
-  function sfxStomp(){ beep(200,0.12,'sawtooth',0.06); }
-  function sfxHit(){ beep(130,0.25,'sawtooth',0.07); }
-  function sfxWin(){ [660,880,1100,1320].forEach(function(f,i){ setTimeout(function(){beep(f,0.16,'square',0.05);}, i*130); }); }
-  function sfxOver(){ [400,300,220].forEach(function(f,i){ setTimeout(function(){beep(f,0.22,'sawtooth',0.06);}, i*140); }); }
+  function beepJump(){ beep(600,0.08,'square',0.045); }
+  function beepCoin(){ beep(1100,0.05,'sine',0.05); setTimeout(function(){beep(1500,0.06,'sine',0.04);},40); }
+  function beepStomp(){ beep(200,0.12,'sawtooth',0.06); }
+  function beepHit(){ beep(130,0.25,'sawtooth',0.07); }
+  function beepWin(){ [660,880,1100,1320].forEach(function(f,i){ setTimeout(function(){beep(f,0.16,'square',0.05);}, i*130); }); }
+  function beepOver(){ [400,300,220].forEach(function(f,i){ setTimeout(function(){beep(f,0.22,'sawtooth',0.06);}, i*140); }); }
+
+  // Plays a generated ElevenLabs clip; falls back to the synthesized beep
+  // above if the audio file is missing or fails to play (e.g. before the
+  // "Generate Game Audio" workflow has run).
+  function makeSfx(url, fallback){
+    var el, failed = false;
+    try{
+      el = new Audio(url);
+      el.preload = 'auto';
+      el.addEventListener('error', function(){ failed = true; });
+    }catch(e){ failed = true; }
+    return function(){
+      if(!failed && el){
+        try{
+          var node = el.cloneNode(true);
+          var p = node.play();
+          if(p && p.catch) p.catch(fallback);
+          return;
+        }catch(e){}
+      }
+      fallback();
+    };
+  }
+
+  var sfxJump = makeSfx('assets/audio/jump.mp3', beepJump);
+  var sfxCoin = makeSfx('assets/audio/coin.mp3', beepCoin);
+  var sfxStomp = makeSfx('assets/audio/stomp.mp3', beepStomp);
+  var sfxHit = makeSfx('assets/audio/hit.mp3', beepHit);
+  var sfxWin = makeSfx('assets/audio/win.mp3', beepWin);
+  var sfxOver = makeSfx('assets/audio/gameover.mp3', beepOver);
 
   // ---------- Particles ----------
   function spawnText(x,y,text,color){

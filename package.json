@@ -1,0 +1,8 @@
+{
+  "name": "pips-platform-quest",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:sfx": "node scripts/generate-sfx.mjs"
+  }
+}
