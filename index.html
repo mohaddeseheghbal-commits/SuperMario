@@ -41,32 +41,6 @@
     gap:14px;
   }
 
-  header{
-    text-align:center;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-
-  h1{
-    font-family:'Press Start 2P',monospace;
-    font-size:clamp(14px,3.4vw,22px);
-    line-height:1.6;
-    letter-spacing:1px;
-    margin:0;
-    color:var(--accent);
-    text-shadow:3px 3px 0 var(--panel-2);
-    text-wrap:balance;
-  }
-
-  .tagline{
-    margin:0;
-    color:var(--text-dim);
-    font-weight:700;
-    font-size:14px;
-    letter-spacing:.3px;
-  }
-
   .hud{
     display:flex;
     flex-wrap:wrap;
@@ -76,6 +50,8 @@
     border-radius:12px;
     padding:10px 14px;
   }
+
+  .hud[hidden], .legend[hidden]{display:none!important;}
 
   .stat{
     flex:1 1 auto;
@@ -150,9 +126,81 @@
     gap:14px;
     padding:20px;
     text-align:center;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
 
   .overlay[hidden]{display:none!important;}
+
+  #overlayStart{
+    background:
+      linear-gradient(180deg,rgba(11,15,31,.35) 0%,rgba(11,15,31,.55) 55%,rgba(11,15,31,.92) 100%),
+      url('assets/start-bg.jpg') center center/cover no-repeat;
+    align-items:flex-start;
+    justify-content:center;
+    text-align:left;
+    padding:26px 20px 26px 30px;
+  }
+
+  #overlayStart h2, #overlayStart p{
+    text-shadow:0 2px 6px rgba(0,0,0,.6);
+  }
+
+  #overlayStart h2{
+    font-size:clamp(16px,4.6vw,26px);
+  }
+
+  .start-content{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+    max-width:min(400px,64%);
+  }
+
+  .start-content .legend{
+    justify-content:flex-start;
+  }
+
+  .best-badge{
+    position:absolute;
+    top:14px;
+    right:14px;
+    background:rgba(11,15,31,.6);
+    border:2px solid var(--bezel);
+    border-radius:20px;
+    padding:6px 12px;
+    font-size:11px;
+    font-weight:800;
+    color:var(--accent-2);
+    letter-spacing:.5px;
+    text-shadow:0 2px 4px rgba(0,0,0,.6);
+  }
+
+  .best-badge[hidden]{display:none!important;}
+
+  @keyframes ctaPulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.045); }
+  }
+
+  #overlayStart .btn{
+    animation:ctaPulse 2.2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #overlayStart .btn{ animation:none; }
+  }
+
+  @media (max-width:560px){
+    #overlayStart{padding:12px 14px 12px 18px;}
+    .start-content{gap:6px; max-width:72%;}
+    #overlayStart h2{font-size:clamp(13px,4.4vw,18px);}
+    #overlayStart p{font-size:11.5px;}
+    .start-content .chip{padding:4px 8px;font-size:10px;}
+    .start-content .sub{display:none;}
+    #overlayStart .btn{padding:9px 16px;font-size:10px;}
+  }
 
   .overlay h2{
     font-family:'Press Start 2P',monospace;
@@ -262,12 +310,7 @@
 <body>
 
 <div class="stage">
-  <header>
-    <h1>Pip's Platform Quest</h1>
-    <p class="tagline">A pocket-sized platformer &mdash; run, jump, grab gems, reach the flag.</p>
-  </header>
-
-  <div class="hud">
+  <div class="hud" id="hud" hidden>
     <div class="stat">
       <span class="stat-label">Score</span>
       <span class="stat-value" id="scoreVal">0</span>
@@ -302,10 +345,19 @@
     </div>
 
     <div class="overlay" id="overlayStart">
-      <h2>Pip's Platform Quest</h2>
-      <p>Rescue the meadow &mdash; collect gems, stomp Grumbles, reach the flag.</p>
-      <p class="sub">3 lives. Falling in a pit costs one. Touch a Grumble from the side and it costs one too &mdash; land on its head instead.</p>
-      <button class="btn" id="playBtn">PLAY</button>
+      <div class="start-content">
+        <h2>Pip's Platform Quest</h2>
+        <p>Run, jump, and grab gems to reach the flag.</p>
+        <div class="legend">
+          <span class="chip"><kbd>&larr;</kbd><kbd>&rarr;</kbd> Move</span>
+          <span class="chip"><kbd>SPACE</kbd> Jump</span>
+          <span class="chip">Stomp Grumbles</span>
+          <span class="chip">3 Lives</span>
+        </div>
+        <button class="btn" id="playBtn">PLAY</button>
+        <p class="sub">Falling in a pit or touching a Grumble from the side costs a life &mdash; land on its head instead.</p>
+      </div>
+      <span class="best-badge" id="overlayBest" hidden></span>
     </div>
 
     <div class="overlay" id="overlayGameOver" hidden>
@@ -322,7 +374,7 @@
     </div>
   </div>
 
-  <div class="legend">
+  <div class="legend" id="legend" hidden>
     <span class="chip"><kbd>&larr;</kbd><kbd>&rarr;</kbd> move</span>
     <span class="chip"><kbd>SPACE</kbd> / <kbd>&uarr;</kbd> jump</span>
     <span class="chip">Land on a Grumble to defeat it</span>
@@ -693,6 +745,8 @@
     ensureAudio();
     resetLevel();
     hideOverlays();
+    document.getElementById('hud').hidden = false;
+    document.getElementById('legend').hidden = false;
     state = 'playing';
   }
 
@@ -887,57 +941,30 @@
 
   function drawEnemies(){ enemies.forEach(drawEnemy); }
 
+  var playerImg = new Image();
+  var playerImgLoaded = false;
+  playerImg.onload = function(){ playerImgLoaded = true; };
+  playerImg.src = 'assets/player.png';
+
   function drawPlayer(){
     var p = player;
     var flicker = p.invuln>0 && Math.floor(timeNow/90)%2===0;
     if(flicker) return;
 
-    var moving = Math.abs(p.vx) > 0.3 && p.onGround;
-    var walk = moving ? Math.sin(timeNow*0.02)*5 : 0;
     var squash = p.onGround ? 1 : (p.vy<0 ? 0.9 : 1.08);
 
     ctx.save();
     ctx.translate(p.x+p.w/2, p.y+p.h/2);
     ctx.scale(p.facing * squash, (2-squash));
 
-    // legs
-    ctx.fillStyle = '#3a2617';
-    ctx.beginPath(); ctx.ellipse(-7+walk*0.3, p.h/2-6, 6, 8, 0, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(7-walk*0.3, p.h/2-6, 6, 8, 0, 0, Math.PI*2); ctx.fill();
-
-    // body
-    var bg = ctx.createLinearGradient(0,-p.h/2,0,p.h/2);
-    bg.addColorStop(0,'#ffab5e');
-    bg.addColorStop(1,'#ff8a3d');
-    ctx.fillStyle = bg;
-    ctx.beginPath();
-    ctx.ellipse(0, 2, p.w/2, p.h/2-4, 0, 0, Math.PI*2);
-    ctx.fill();
-
-    // scarf
-    ctx.fillStyle = '#5ee6c5';
-    ctx.fillRect(-p.w/2, -4, p.w, 7);
-
-    // ears
-    ctx.fillStyle = '#ffab5e';
-    ctx.beginPath(); ctx.moveTo(-12,-p.h/2+6); ctx.lineTo(-18,-p.h/2-8); ctx.lineTo(-6,-p.h/2+2); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(12,-p.h/2+6); ctx.lineTo(18,-p.h/2-8); ctx.lineTo(6,-p.h/2+2); ctx.closePath(); ctx.fill();
-
-    // leaf cap
-    ctx.fillStyle = '#59c26b';
-    ctx.beginPath();
-    ctx.ellipse(4,-p.h/2+2, 12, 6, -0.5, 0, Math.PI*2);
-    ctx.fill();
-
-    // eyes
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.ellipse(6,-2,6,7,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#231433';
-    ctx.beginPath(); ctx.arc(8,-1,3,0,Math.PI*2); ctx.fill();
-
-    // nose
-    ctx.fillStyle = '#e8672a';
-    ctx.beginPath(); ctx.arc(p.w/2-2,4,3,0,Math.PI*2); ctx.fill();
+    if(playerImgLoaded){
+      var drawH = p.h * 1.15;
+      var drawW = drawH * (playerImg.width/playerImg.height);
+      ctx.drawImage(playerImg, -drawW/2, p.h/2-drawH, drawW, drawH);
+    } else {
+      ctx.fillStyle = '#ff8a3d';
+      ctx.beginPath(); ctx.ellipse(0, 2, p.w/2, p.h/2-4, 0, 0, Math.PI*2); ctx.fill();
+    }
 
     ctx.restore();
   }
@@ -993,6 +1020,11 @@
   resetLevel();
   updateHud();
   document.getElementById('bestVal').textContent = bestScore;
+  if(bestScore > 0){
+    var overlayBest = document.getElementById('overlayBest');
+    overlayBest.textContent = 'Best: '+bestScore;
+    overlayBest.hidden = false;
+  }
   requestAnimationFrame(loop);
 })();
 </script>
