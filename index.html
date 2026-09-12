@@ -22,11 +22,13 @@
 
   *{box-sizing:border-box;}
 
+  html, body{height:100%;}
+
   body{
     background:var(--ink);
     color:var(--text);
     font-family:'Baloo 2',ui-rounded,'Segoe UI',sans-serif;
-    padding-block:28px;
+    padding-block:12px;
     display:flex;
     justify-content:center;
     margin:0;
@@ -34,10 +36,12 @@
 
   .stage{
     width:100%;
-    max-width:860px;
+    max-width:none;
+    height:100%;
     padding-inline:16px;
     display:flex;
     flex-direction:column;
+    justify-content:center;
     gap:14px;
   }
 
@@ -424,6 +428,33 @@
   var ctx = canvas.getContext('2d');
   var CANVAS_W = 800, CANVAS_H = 450;
   var GROUND_Y = 370;
+
+  // ---------- Fit the game frame to the viewport ----------
+  var stageEl = document.querySelector('.stage');
+  var gameFrameEl = document.getElementById('gameFrame');
+  var hudEl = document.getElementById('hud');
+  var legendEl = document.getElementById('legend');
+
+  function fitGameFrame(){
+    var stageStyle = getComputedStyle(stageEl);
+    var gap = parseFloat(stageStyle.gap) || 0;
+    var padX = (parseFloat(stageStyle.paddingLeft) || 0) + (parseFloat(stageStyle.paddingRight) || 0);
+    var availW = stageEl.clientWidth - padX;
+    var availH = stageEl.clientHeight;
+    if(!hudEl.hidden) availH -= hudEl.offsetHeight + gap;
+    if(!legendEl.hidden) availH -= legendEl.offsetHeight + gap;
+
+    var w = availW;
+    var h = w * CANVAS_H / CANVAS_W;
+    if(h > availH){
+      h = availH;
+      w = h * CANVAS_W / CANVAS_H;
+    }
+    gameFrameEl.style.width = Math.max(w,0) + 'px';
+    gameFrameEl.style.height = Math.max(h,0) + 'px';
+  }
+
+  window.addEventListener('resize', fitGameFrame);
   var GRAVITY = 0.65, MOVE_SPEED = 4.2, FRICTION = 0.82, JUMP_V = -13.5, MAX_FALL = 15, BOUNCE_V = -9;
 
   // ---------- Level data ----------
@@ -781,6 +812,7 @@
     hideOverlays();
     document.getElementById('hud').hidden = false;
     document.getElementById('legend').hidden = false;
+    fitGameFrame();
     state = 'playing';
   }
 
@@ -1085,6 +1117,7 @@
     overlayBest.textContent = '\u{1F451} Best: '+bestScore;
     overlayBest.hidden = false;
   }
+  fitGameFrame();
   requestAnimationFrame(loop);
 })();
 </script>
