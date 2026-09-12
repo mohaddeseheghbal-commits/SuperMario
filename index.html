@@ -969,6 +969,11 @@
     ctx.beginPath(); ctx.ellipse(x, baseY+4, 14, 6, 0, 0, Math.PI*2); ctx.fill();
   }
 
+  var coinImg = new Image();
+  var coinImgLoaded = false;
+  coinImg.onload = function(){ coinImgLoaded = true; };
+  coinImg.src = 'assets/coin.png';
+
   function drawCoins(){
     coins.forEach(function(c,i){
       var wob = Math.abs(Math.cos(timeNow*0.004 + i));
@@ -976,26 +981,20 @@
       ctx.save();
       ctx.translate(c.x, c.y + Math.sin(timeNow*0.003+i)*3);
       ctx.scale(Math.max(0.25,wob), 1);
-      var g = ctx.createRadialGradient(-3,-3,1,0,0,r);
-      g.addColorStop(0,'#fff3b0');
-      g.addColorStop(1,'#ffb400');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(0,0,r,0,Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle = '#a5680a';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(0,0,r-3,0,Math.PI*2);
-      ctx.strokeStyle = 'rgba(165,104,10,0.6)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.fillStyle = '#a5680a';
-      ctx.font = "bold 11px 'Baloo 2', sans-serif";
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('$', 0, 0.5);
+
+      if(coinImgLoaded){
+        var d = r*2.2;
+        ctx.drawImage(coinImg, -d/2, -d/2, d, d);
+      } else {
+        var g = ctx.createRadialGradient(-3,-3,1,0,0,r);
+        g.addColorStop(0,'#fff3b0');
+        g.addColorStop(1,'#ffb400');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(0,0,r,0,Math.PI*2);
+        ctx.fill();
+      }
+
       ctx.restore();
     });
   }
